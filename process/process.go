@@ -396,7 +396,7 @@ func (p *Process) isRunning() bool {
 		if runtime.GOOS == "windows" {
 			running, err := isProcessRunning(p.cmd.Process.Pid)
 			if err != nil {
-				fmt.Printf("Error checking process status: %s\n", err.Error())
+				log.WithFields(log.Fields{"program": p.GetName(), "function": "isRunning"}).Errorf("isProcessRunning error : %s", err.Error())
 				return false
 			}
 
@@ -404,7 +404,7 @@ func (p *Process) isRunning() bool {
 				// fmt.Printf("Process %d is still running\n", p.cmd.Process.Pid)
 				return true
 			} else {
-				fmt.Printf("Process %d has exited\n", p.cmd.Process.Pid)
+				log.WithFields(log.Fields{"program": p.GetName(), "function": "isRunning"}).Debugf("isProcessRunning exited : %d", p.cmd.Process.Pid)
 				return false
 			}
 		}
@@ -417,12 +417,12 @@ func (p *Process) isRunning() bool {
 func (p *Process) createProgramCommand() error {
 	args, err := parseCommand(p.config.GetStringExpression("command", ""))
 	if err != nil {
-		fmt.Errorf("parseCommand : %s", err.Error())
+		log.WithFields(log.Fields{"program": p.GetName(), "function": "createProgramCommand"}).Errorf("parseCommand error : %s", err.Error())
 		return err
 	}
 	p.cmd, err = createCommand(args)
 	if err != nil {
-		fmt.Errorf("createCommand : %s", err.Error())
+		log.WithFields(log.Fields{"program": p.GetName(), "function": "createProgramCommand"}).Errorf("createCommand error : %s", err.Error())
 		return err
 	}
 	if p.setUser() != nil {
