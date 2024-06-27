@@ -1,3 +1,4 @@
+//go:build !windows && !freebsd
 // +build !windows,!freebsd
 
 package main
@@ -16,7 +17,6 @@ func (s *Supervisor) checkRequiredResources() error {
 		return s.checkMinLimit(6, "NPROC", minprocs)
 	}
 	return nil
-
 }
 
 func (s *Supervisor) getMinRequiredRes(resourceName string) (uint64, error) {
@@ -30,7 +30,6 @@ func (s *Supervisor) getMinRequiredRes(resourceName string) (uint64, error) {
 	} else {
 		return 0, fmt.Errorf("No supervisord section")
 	}
-
 }
 
 func (s *Supervisor) checkMinLimit(resource int, resourceName string, minRequiredSource uint64) error {

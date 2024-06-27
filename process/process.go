@@ -103,15 +103,17 @@ type Process struct {
 
 // NewProcess creates new Process object
 func NewProcess(supervisorID string, config *config.Entry) *Process {
-	proc := &Process{supervisorID: supervisorID,
-		config:     config,
-		cmd:        nil,
-		startTime:  time.Unix(0, 0),
-		stopTime:   time.Unix(0, 0),
-		state:      Stopped,
-		inStart:    false,
-		stopByUser: false,
-		retryTimes: new(int32)}
+	proc := &Process{
+		supervisorID: supervisorID,
+		config:       config,
+		cmd:          nil,
+		startTime:    time.Unix(0, 0),
+		stopTime:     time.Unix(0, 0),
+		state:        Stopped,
+		inStart:      false,
+		stopByUser:   false,
+		retryTimes:   new(int32),
+	}
 	proc.config = config
 	proc.cmd = nil
 	proc.addToCron()
@@ -135,12 +137,12 @@ func (p *Process) addToCron() {
 			}
 		})
 	}
-
 }
 
 // Start process
 // Args:
-//  wait - true, wait the program started or failed
+//
+//	wait - true, wait the program started or failed
 func (p *Process) Start(wait bool) {
 	log.WithFields(log.Fields{"program": p.GetName()}).Info("try to start program")
 	p.lock.Lock()
@@ -161,7 +163,6 @@ func (p *Process) Start(wait bool) {
 	}
 
 	go func() {
-
 		for {
 			p.run(func() {
 				if wait {
@@ -355,7 +356,6 @@ func (p *Process) isAutoRestart() bool {
 		}
 	}
 	return false
-
 }
 
 func (p *Process) inExitCodes(exitCode int) bool {
@@ -376,7 +376,6 @@ func (p *Process) getExitCode() (int, error) {
 	}
 
 	return -1, fmt.Errorf("no exit code")
-
 }
 
 func (p *Process) getExitCodes() []int {
@@ -391,13 +390,47 @@ func (p *Process) getExitCodes() []int {
 	return result
 }
 
+// windows check pid
+const (
+	STILL_ACTIVE = 259
+)
+
+func isProcessRunning(pid int) (bool, error) {
+	// 打开进程
+	handle, err := syscall.OpenProcess(syscall.PROCESS_QUERY_INFORMATION, false, uint32(pid))
+	if err != nil {
+		return false, err
+	}
+	defer syscall.CloseHandle(handle)
+
+	// 获取进程退出代码
+	var exitCode uint32
+	err = syscall.GetExitCodeProcess(handle, &exitCode)
+	if err != nil {
+		return false, err
+	}
+
+	// 如果进程仍然在运行，退出代码为 STILL_ACTIVE (259)
+	return exitCode == STILL_ACTIVE, nil
+}
+
 // check if the process is running or not
-//
 func (p *Process) isRunning() bool {
 	if p.cmd != nil && p.cmd.Process != nil {
 		if runtime.GOOS == "windows" {
-			proc, err := os.FindProcess(p.cmd.Process.Pid)
-			return proc != nil && err == nil
+			running, err := isProcessRunning(p.cmd.Process.Pid)
+			if err != nil {
+				fmt.Printf("Error checking process status: %s\n", err.Error())
+				return false
+			}
+
+			if running {
+				// fmt.Printf("Process %d is still running\n", p.cmd.Process.Pid)
+				return true
+			} else {
+				fmt.Printf("Process %d has exited\n", p.cmd.Process.Pid)
+				return false
+			}
 		}
 		return p.cmd.Process.Signal(syscall.Signal(0)) == nil
 	}
@@ -407,12 +440,13 @@ func (p *Process) isRunning() bool {
 // create Command object for the program
 func (p *Process) createProgramCommand() error {
 	args, err := parseCommand(p.config.GetStringExpression("command", ""))
-
 	if err != nil {
+		fmt.Errorf("parseCommand : %s", err.Error())
 		return err
 	}
 	p.cmd, err = createCommand(args)
 	if err != nil {
+		fmt.Errorf("createCommand : %s", err.Error())
 		return err
 	}
 	if p.setUser() != nil {
@@ -427,7 +461,6 @@ func (p *Process) createProgramCommand() error {
 
 	p.stdin, _ = p.cmd.StdinPipe()
 	return nil
-
 }
 
 func (p *Process) setProgramRestartChangeMonitor(programPath string) {
@@ -453,7 +486,6 @@ func (p *Process) setProgramRestartChangeMonitor(programPath string) {
 				p.Stop(true)
 				p.Start(true)
 			}
-
 		})
 	}
 	dirMonitor := p.config.GetString("restart_directory_monitor", "")
@@ -482,7 +514,6 @@ func (p *Process) setProgramRestartChangeMonitor(programPath string) {
 			}
 		})
 	}
-
 }
 
 // wait for the started program exit
@@ -506,7 +537,6 @@ func (p *Process) failToStartProgram(reason string, finishCb func()) {
 }
 
 // monitor if the program is in running before endTime
-//
 func (p *Process) monitorProgramIsRunning(endTime time.Time, monitorExited *int32, programExited *int32) {
 	// if time is not expired
 	for time.Now().Before(endTime) && atomic.LoadInt32(programExited) == 0 {
@@ -564,13 +594,12 @@ func (p *Process) run(finishCb func()) {
 		}
 
 		err = p.cmd.Start()
-
 		if err != nil {
 			if atomic.LoadInt32(p.retryTimes) >= p.getStartRetries() {
-				p.failToStartProgram(fmt.Sprintf("fail to start program with error:%v", err), finishCbWrapper)
+				p.failToStartProgram(fmt.Sprintf("fail to start program with error:%s", err.Error()), finishCbWrapper)
 				break
 			} else {
-				log.WithFields(log.Fields{"program": p.GetName()}).Info("fail to start program with error:", err)
+				log.WithFields(log.Fields{"program": p.GetName()}).Info("fail to start program with error:", err.Error())
 				p.changeStateTo(Backoff)
 				continue
 			}
@@ -664,7 +693,6 @@ func (p *Process) run(finishCb func()) {
 			break
 		}
 	}
-
 }
 
 func (p *Process) changeStateTo(procState State) {
@@ -700,9 +728,9 @@ func (p *Process) changeStateTo(procState State) {
 // Signal sends signal to the process
 //
 // Args:
-//   sig - the signal to the process
-//   sigChildren - if true, sends the same signal to the process and its children
 //
+//	sig - the signal to the process
+//	sigChildren - if true, sends the same signal to the process and its children
 func (p *Process) Signal(sig os.Signal, sigChildren bool) error {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
@@ -727,9 +755,9 @@ func (p *Process) sendSignals(sigs []string, sigChildren bool) {
 // send signal to the process
 //
 // Args:
-//    sig - the signal to be sent
-//    sigChildren - if true, the signal also will be sent to children processes too
 //
+//	sig - the signal to be sent
+//	sigChildren - if true, the signal also will be sent to children processes too
 func (p *Process) sendSignal(sig os.Signal, sigChildren bool) error {
 	if p.cmd != nil && p.cmd.Process != nil {
 		log.WithFields(log.Fields{"program": p.GetName(), "signal": sig}).Info("Send signal to program")
@@ -835,7 +863,8 @@ func (p *Process) createStderrLogEventEmitter() logger.LogEventEmitter {
 func (p *Process) registerEventListener(eventListenerName string,
 	_events []string,
 	stdin io.Reader,
-	stdout io.Writer) {
+	stdout io.Writer,
+) {
 	eventListener := events.NewEventListener(eventListenerName,
 		p.supervisorID,
 		stdin,

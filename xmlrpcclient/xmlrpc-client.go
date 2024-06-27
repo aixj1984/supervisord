@@ -128,7 +128,6 @@ func (r *XMLRPCClient) postInetHTTP(method string, url string, data interface{},
 		return
 	}
 	r.processResponse(resp, processBody)
-
 }
 
 func (r *XMLRPCClient) postUnixHTTP(method string, path string, data interface{}, processBody func(io.ReadCloser, error)) {
@@ -153,7 +152,6 @@ func (r *XMLRPCClient) postUnixHTTP(method string, path string, data interface{}
 		}
 	}
 	req, err := r.createHTTPRequest(method, "/RPC2", data)
-
 	if err != nil {
 		return
 	}
@@ -172,7 +170,6 @@ func (r *XMLRPCClient) postUnixHTTP(method string, path string, data interface{}
 		return
 	}
 	r.processResponse(resp, processBody)
-
 }
 
 func (r *XMLRPCClient) post(method string, data interface{}, processBody func(io.ReadCloser, error)) {
@@ -188,7 +185,6 @@ func (r *XMLRPCClient) post(method string, data interface{}, processBody func(io
 	} else {
 		fmt.Printf("Unsupported URL scheme:%s\n", myurl.Scheme)
 	}
-
 }
 
 // GetVersion sends http request to acquire software version of supervisord
@@ -258,7 +254,6 @@ func (r *XMLRPCClient) Shutdown() (reply ShutdownReply, err error) {
 		if err == nil {
 			err = xml.DecodeClientResponse(body, &reply)
 		}
-
 	})
 
 	return

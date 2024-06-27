@@ -68,8 +68,10 @@ type XMLProcessorManager struct {
 
 // NewXMLProcessorManager creates new XMLProcessorManager object
 func NewXMLProcessorManager() *XMLProcessorManager {
-	return &XMLProcessorManager{leafProcessors: make(map[string]XMLLeafProcessor),
-		switchTypeProcessors: make(map[string]XMLSwitchTypeProcessor)}
+	return &XMLProcessorManager{
+		leafProcessors:       make(map[string]XMLLeafProcessor),
+		switchTypeProcessors: make(map[string]XMLSwitchTypeProcessor),
+	}
 }
 
 // AddLeafProcessor adds leaf processor for the xml path

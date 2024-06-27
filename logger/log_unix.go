@@ -1,3 +1,4 @@
+//go:build !windows && !nacl && !plan9
 // +build !windows,!nacl,!plan9
 
 package logger
@@ -206,7 +207,6 @@ func parseSysLogConfig(config string) (protocol string, host string, port int, e
 		err = errors.New("invalid format")
 	}
 	return
-
 }
 
 // NewRemoteSysLogger creates network syslog logger object
@@ -234,5 +234,4 @@ func NewRemoteSysLogger(name string, config string, props map[string]string, log
 		logger.logWriter = NewBackendSysLogWriter(protocol, fmt.Sprintf("%s:%d", host, port), priority, name)
 	}
 	return logger
-
 }

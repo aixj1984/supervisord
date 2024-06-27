@@ -1,3 +1,4 @@
+//go:build freebsd
 // +build freebsd
 
 package main
@@ -12,11 +13,10 @@ func (s *Supervisor) checkRequiredResources() error {
 		return s.checkMinLimit(syscall.RLIMIT_NOFILE, "NOFILE", minfds)
 	}
 	if minprocs, vErr := s.getMinRequiredRes("minprocs"); vErr == nil {
-		//RPROC = 6
+		// RPROC = 6
 		return s.checkMinLimit(6, "NPROC", minprocs)
 	}
 	return nil
-
 }
 
 func (s *Supervisor) getMinRequiredRes(resourceName string) (int64, error) {
@@ -30,7 +30,6 @@ func (s *Supervisor) getMinRequiredRes(resourceName string) (int64, error) {
 	} else {
 		return 0, fmt.Errorf("No supervisord section")
 	}
-
 }
 
 func (s *Supervisor) checkMinLimit(resource int, resourceName string, minRequiredSource int64) error {

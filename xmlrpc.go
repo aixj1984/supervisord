@@ -203,8 +203,8 @@ func (p *XMLRPC) startHTTPServer(user string, password string, protocol string, 
 		startedCb()
 		log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Fatal("fail to listen on address")
 	}
-
 }
+
 func (p *XMLRPC) createRPCServer(s *Supervisor) *rpc.Server {
 	RPC := rpc.NewServer()
 	xmlrpcCodec := xml.NewCodec()

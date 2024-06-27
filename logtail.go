@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/ochinchina/supervisord/logger"
 	"net/http"
+
+	"github.com/ochinchina/supervisord/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -90,5 +91,4 @@ func (lt *Logtail) getLog(logType string, w http.ResponseWriter, req *http.Reque
 	//	compositeLogger.RemoveLogger(chanLogger)
 	//	_ = chanLogger.Close()
 	//}
-
 }

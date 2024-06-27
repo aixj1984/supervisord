@@ -28,6 +28,7 @@ func isProgramBefore(entries []*Entry, program1 string, program2 string) bool {
 
 	return program1Order >= 0 && program1Order < program2Order
 }
+
 func TestSortProgram(t *testing.T) {
 	entries := make([]*Entry, 0)
 	entry := NewEntry(".")
@@ -88,5 +89,4 @@ func TestSortProgram(t *testing.T) {
 		!isProgramBefore(result, "prog-7", "prog-6") {
 		t.Error("Program sort is incorrect")
 	}
-
 }

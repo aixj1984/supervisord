@@ -21,40 +21,31 @@ type CtlCommand struct {
 }
 
 // StatusCommand get the status of all supervisor managed programs
-type StatusCommand struct {
-}
+type StatusCommand struct{}
 
 // StartCommand start the given program
-type StartCommand struct {
-}
+type StartCommand struct{}
 
 // StopCommand stop the given program
-type StopCommand struct {
-}
+type StopCommand struct{}
 
 // RestartCommand restart the given program
-type RestartCommand struct {
-}
+type RestartCommand struct{}
 
 // ShutdownCommand shutdown the supervisor
-type ShutdownCommand struct {
-}
+type ShutdownCommand struct{}
 
 // ReloadCommand reload all the programs
-type ReloadCommand struct {
-}
+type ReloadCommand struct{}
 
 // PidCommand get the pid of program
-type PidCommand struct {
-}
+type PidCommand struct{}
 
 // SignalCommand send signal of program
-type SignalCommand struct {
-}
+type SignalCommand struct{}
 
 // LogtailCommand tail the stdout/stderr log of program through http interface
-type LogtailCommand struct {
-}
+type LogtailCommand struct{}
 
 // CmdCheckWrapperCommand A wrapper can be used to check whether
 // number of parameters is valid or not
@@ -68,16 +59,18 @@ type CmdCheckWrapperCommand struct {
 	usage string
 }
 
-var ctlCommand CtlCommand
-var statusCommand = CmdCheckWrapperCommand{&StatusCommand{}, 0, ""}
-var startCommand = CmdCheckWrapperCommand{&StartCommand{}, 0, ""}
-var stopCommand = CmdCheckWrapperCommand{&StopCommand{}, 0, ""}
-var restartCommand = CmdCheckWrapperCommand{&RestartCommand{}, 0, ""}
-var shutdownCommand = CmdCheckWrapperCommand{&ShutdownCommand{}, 0, ""}
-var reloadCommand = CmdCheckWrapperCommand{&ReloadCommand{}, 0, ""}
-var pidCommand = CmdCheckWrapperCommand{&PidCommand{}, 1, "pid <program>"}
-var signalCommand = CmdCheckWrapperCommand{&SignalCommand{}, 2, "signal <signal_name> <program>[...]"}
-var logtailCommand = CmdCheckWrapperCommand{&LogtailCommand{}, 1, "logtail <program>"}
+var (
+	ctlCommand      CtlCommand
+	statusCommand   = CmdCheckWrapperCommand{&StatusCommand{}, 0, ""}
+	startCommand    = CmdCheckWrapperCommand{&StartCommand{}, 0, ""}
+	stopCommand     = CmdCheckWrapperCommand{&StopCommand{}, 0, ""}
+	restartCommand  = CmdCheckWrapperCommand{&RestartCommand{}, 0, ""}
+	shutdownCommand = CmdCheckWrapperCommand{&ShutdownCommand{}, 0, ""}
+	reloadCommand   = CmdCheckWrapperCommand{&ReloadCommand{}, 0, ""}
+	pidCommand      = CmdCheckWrapperCommand{&PidCommand{}, 1, "pid <program>"}
+	signalCommand   = CmdCheckWrapperCommand{&SignalCommand{}, 2, "signal <signal_name> <program>[...]"}
+	logtailCommand  = CmdCheckWrapperCommand{&LogtailCommand{}, 1, "logtail <program>"}
+)
 
 func (x *CtlCommand) getServerURL() string {
 	options.Configuration, _ = findSupervisordConf()
@@ -509,5 +502,4 @@ func init() {
 		"get the standard output&standard error of the program",
 		"get the standard output&standard error of the program",
 		&logtailCommand)
-
 }

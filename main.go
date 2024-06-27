@@ -50,11 +50,12 @@ func initSignals(s *Supervisor) {
 		s.procMgr.StopAllProcesses()
 		os.Exit(-1)
 	}()
-
 }
 
-var options Options
-var parser = flags.NewParser(&options, flags.Default & ^flags.PrintErrors)
+var (
+	options Options
+	parser  = flags.NewParser(&options, flags.Default & ^flags.PrintErrors)
+)
 
 func loadEnvFile() {
 	if len(options.EnvFile) <= 0 {
@@ -105,13 +106,15 @@ func loadEnvFile() {
 // 5. ../etc/supervisord.conf (Relative to the executable)
 // 6. ../supervisord.conf (Relative to the executable)
 func findSupervisordConf() (string, error) {
-	possibleSupervisordConf := []string{options.Configuration,
+	possibleSupervisordConf := []string{
+		options.Configuration,
 		"./supervisord.ini",
 		"./etc/supervisord.conf",
 		"/etc/supervisord.conf",
 		"/etc/supervisor/supervisord.conf",
 		"../etc/supervisord.conf",
-		"../supervisord.conf"}
+		"../supervisord.conf",
+	}
 
 	for _, file := range possibleSupervisordConf {
 		if _, err := os.Stat(file); err == nil {

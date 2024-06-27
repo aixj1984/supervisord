@@ -2,11 +2,11 @@ package config
 
 import (
 	"fmt"
-	"supervisord/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
+	"supervisord/util"
 	"testing"
 )
 
@@ -21,7 +21,6 @@ func createTmpFile() (string, error) {
 
 func saveToTmpFile(b []byte) (string, error) {
 	f, err := createTmpFile()
-
 	if err != nil {
 		return "", err
 	}
@@ -104,7 +103,6 @@ func TestGetEnvValueFromConfig(t *testing.T) {
 	if len(envs) != 2 || !util.InArray("A=env1", envs) || !util.InArray("B=env2", envs) {
 		t.Error("Fail to get env value")
 	}
-
 }
 
 func TestGetBytesFromConfig(t *testing.T) {
@@ -114,7 +112,6 @@ func TestGetBytesFromConfig(t *testing.T) {
 	if entry.GetBytes("A", 0) != 1024 || entry.GetBytes("B", 0) != 2048 || entry.GetBytes("C", 0) != 3*1024*1024 || entry.GetBytes("D", 0) != 4*1024*1024*1024 || entry.GetBytes("E", 0) != 0 || entry.GetBytes("F", -1) != -1 {
 		t.Error("Fail to get bytes")
 	}
-
 }
 
 func TestGetUnitHttpServer(t *testing.T) {
@@ -166,7 +163,6 @@ func TestToRegex(t *testing.T) {
 	if matched && err == nil {
 		t.Error("fail to match the file")
 	}
-
 }
 
 func TestConfigWithInclude(t *testing.T) {
@@ -186,7 +182,6 @@ func TestConfigWithInclude(t *testing.T) {
 	if entry == nil {
 		t.Error("fail to include section test")
 	}
-
 }
 
 func TestDefaultParams(t *testing.T) {
@@ -206,5 +201,4 @@ func TestDefaultParams(t *testing.T) {
 	if entry.GetString("autorestart", "") != "true" {
 		t.Error("autorestart value should be true")
 	}
-
 }
