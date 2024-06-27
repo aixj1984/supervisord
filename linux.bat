@@ -15,7 +15,9 @@ SET CGO_ENABLED=0
 set GOARCH=amd64
 set GOOS=linux
 
-go build -o "%OutFile%"
+::go build -o "%OutFile%"
+
+go build -tags release  -o "%OutFile%"
 
 SET CGO_ENABLED=0
 SET GOOS=windows
