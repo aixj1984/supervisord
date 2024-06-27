@@ -390,30 +390,6 @@ func (p *Process) getExitCodes() []int {
 	return result
 }
 
-// windows check pid
-const (
-	STILL_ACTIVE = 259
-)
-
-func isProcessRunning(pid int) (bool, error) {
-	// 打开进程
-	handle, err := syscall.OpenProcess(syscall.PROCESS_QUERY_INFORMATION, false, uint32(pid))
-	if err != nil {
-		return false, err
-	}
-	defer syscall.CloseHandle(handle)
-
-	// 获取进程退出代码
-	var exitCode uint32
-	err = syscall.GetExitCodeProcess(handle, &exitCode)
-	if err != nil {
-		return false, err
-	}
-
-	// 如果进程仍然在运行，退出代码为 STILL_ACTIVE (259)
-	return exitCode == STILL_ACTIVE, nil
-}
-
 // check if the process is running or not
 func (p *Process) isRunning() bool {
 	if p.cmd != nil && p.cmd.Process != nil {
