@@ -524,7 +524,7 @@ func (p *Process) monitorProgramIsRunning(endTime time.Time, monitorExited *int3
 	defer p.lock.Unlock()
 	// if the program does not exit
 	if atomic.LoadInt32(programExited) == 0 && p.state == Starting {
-		log.WithFields(log.Fields{"program": p.GetName()}).Info("success to start program")
+		log.WithFields(log.Fields{"program": p.GetName(), "pid": p.cmd.Process.Pid}).Info("success to start program")
 		p.changeStateTo(Running)
 	}
 }
@@ -613,7 +613,7 @@ func (p *Process) run(finishCb func()) {
 		// Set startsec to 0 to indicate that the program needn't stay
 		// running for any particular amount of time.
 		if startSecs <= 0 {
-			log.WithFields(log.Fields{"program": p.GetName()}).Info("success to start program")
+			log.WithFields(log.Fields{"program": p.GetName(), "pid": p.cmd.Process.Pid}).Info("success to start program")
 			p.changeStateTo(Running)
 			go finishCbWrapper()
 		} else {
