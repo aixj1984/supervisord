@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/sha1" //nolint:gosec
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -191,6 +193,7 @@ func (p *XMLRPC) startHTTPServer(user string, password string, protocol string, 
 		}
 		dir := filepath.Dir(filePath)
 		mux.Handle("/log/"+realName+"/", http.StripPrefix("/log/"+realName+"/", http.FileServer(http.Dir(dir))))
+		// mux.Handle("/log/"+realName+"/", fileInfoHandler(dir, realName))
 	}
 
 	listener, err := net.Listen(protocol, listenAddr)
@@ -203,6 +206,45 @@ func (p *XMLRPC) startHTTPServer(user string, password string, protocol string, 
 		startedCb()
 		log.WithFields(log.Fields{"addr": listenAddr, "protocol": protocol}).Fatal("fail to listen on address")
 	}
+}
+
+type FileInfo struct {
+	Name    string `json:"name"`
+	Size    int64  `json:"size"`
+	Mode    string `json:"mode"`
+	ModTime string `json:"modTime"`
+	IsDir   bool   `json:"isDir"`
+}
+
+func fileInfoHandler(dir, realName string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(dir, realName)
+		// Remove the "/log/<realName>/" prefix from the URL path to get the file path
+		filePath := filepath.Join(dir, r.URL.Path[len("/log/"+realName+"/"):])
+
+		// Get the file information
+		fileInfo, err := os.Stat(filePath)
+		if os.IsNotExist(err) {
+			http.NotFound(w, r)
+			return
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Create the file info struct
+		info := FileInfo{
+			Name:    fileInfo.Name(),
+			Size:    fileInfo.Size(),
+			Mode:    fileInfo.Mode().String(),
+			ModTime: fileInfo.ModTime().Format("2006-01-02 15:04:05"),
+			IsDir:   fileInfo.IsDir(),
+		}
+
+		// Return the file information as JSON
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(info)
+	})
 }
 
 func (p *XMLRPC) createRPCServer(s *Supervisor) *rpc.Server {
