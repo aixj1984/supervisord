@@ -4,7 +4,6 @@ import (
 	"crypto/sha1" //nolint:gosec
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -104,7 +103,7 @@ func readFile(path string) ([]byte, error) {
 		return nil, err
 	}
 	defer f.Close()
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +122,11 @@ func getProgramConfigPath(programName string, s *Supervisor) string {
 }
 
 func readLogHtml(writer http.ResponseWriter, request *http.Request) {
-	b, err := readFile("webgui/log.html")
+	// b, err := readFile("webgui/log.html")
+
+	b, err := ReadStaticFile("webgui/log.html")
 	if err != nil {
+		log.Infof("readFile error : %s ", err.Error())
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
