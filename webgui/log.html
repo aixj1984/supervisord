@@ -16,7 +16,7 @@
         border-bottom: 1px solid #ddd;
       }
       .link-container a:before {
-        content: attr(href);
+        /* content: attr(href); */
         display: table-cell;
         padding: 8px;
         border-bottom: 1px solid #ddd;
@@ -64,6 +64,7 @@
             $("a").addClass("font-weight-bold");
             $("a").css("font-size", "20px");
             $("a").css("line-height", "30px");
+            $("a").css("padding", "8px");
           })
           .catch(function (err) {
             alert("ERROR:此程序未配置日志，如需配置参考stdout_logfile");
