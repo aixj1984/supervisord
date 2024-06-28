@@ -4,7 +4,6 @@ import (
 	"crypto/sha1" //nolint:gosec
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -193,7 +192,7 @@ func (p *XMLRPC) startHTTPServer(user string, password string, protocol string, 
 		}
 		dir := filepath.Dir(filePath)
 		mux.Handle("/log/"+realName+"/", http.StripPrefix("/log/"+realName+"/", http.FileServer(http.Dir(dir))))
-		// mux.Handle("/log/"+realName+"/", fileInfoHandler(dir, realName))
+		// mux.Handle("/log/"+realName+"/", fileInfoHandler(dir))
 	}
 
 	listener, err := net.Listen(protocol, listenAddr)
@@ -216,14 +215,10 @@ type FileInfo struct {
 	IsDir   bool   `json:"isDir"`
 }
 
-func fileInfoHandler(dir, realName string) http.Handler {
+func fileInfoHandler(dirPath string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(dir, realName)
-		// Remove the "/log/<realName>/" prefix from the URL path to get the file path
-		filePath := filepath.Join(dir, r.URL.Path[len("/log/"+realName+"/"):])
-
-		// Get the file information
-		fileInfo, err := os.Stat(filePath)
+		// Open the directory
+		f, err := os.Open(dirPath)
 		if os.IsNotExist(err) {
 			http.NotFound(w, r)
 			return
@@ -231,19 +226,30 @@ func fileInfoHandler(dir, realName string) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		defer f.Close()
 
-		// Create the file info struct
-		info := FileInfo{
-			Name:    fileInfo.Name(),
-			Size:    fileInfo.Size(),
-			Mode:    fileInfo.Mode().String(),
-			ModTime: fileInfo.ModTime().Format("2006-01-02 15:04:05"),
-			IsDir:   fileInfo.IsDir(),
+		// Read the directory contents
+		files, err := f.Readdir(-1)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		// Return the file information as JSON
+		// Create a slice to hold file information
+		var fileInfos []FileInfo
+		for _, file := range files {
+			fileInfos = append(fileInfos, FileInfo{
+				Name:    file.Name(),
+				Size:    file.Size(),
+				Mode:    file.Mode().String(),
+				ModTime: file.ModTime().Format("2006-01-02 15:04:05"),
+				IsDir:   file.IsDir(),
+			})
+		}
+
+		// Return the directory contents as JSON
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(info)
+		json.NewEncoder(w).Encode(fileInfos)
 	})
 }
 
