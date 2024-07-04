@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>告警通知</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      .header {
+        background-color: #ff4d4d;
+        padding: 10px;
+        color: #ffffff;
+        text-align: center;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+      }
+      .content {
+        margin: 20px 0;
+      }
+      .content p {
+        margin: 10px 0;
+      }
+      .button-container {
+        text-align: center;
+        margin: 20px 0;
+      }
+      .button {
+        background-color: #ff4d4d;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #aaaaaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>告警通知</h1>
+      </div>
+      <div class="content">
+        <p><strong>标题：</strong> 服务异常告警</p>
+        <p><strong>系统：</strong> {{.ProgramName}}</p>
+        <p><strong>指令：</strong> {{.Command}}</p>
+        <p><strong>描述：</strong> 进程异常退出，请立即检查。</p>
+        <p><strong>时间：</strong> {{.ExceptTime}}</p>
+      </div>
+      <div class="button-container">
+        <a href="{{.ServerAddr}}" class="button">查看详情</a>
+      </div>
+      <div class="footer">
+        <p>这是自动生成的邮件，请勿回复。</p>
+      </div>
+    </div>
+  </body>
+</html>
