@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
@@ -32,37 +34,56 @@ type SmtpConfig struct {
 }
 
 type EmailService struct {
-	Cfg    SmtpConfig
-	Client *mail.SMTPClient
+	Cfg        SmtpConfig
+	SMTPServer *mail.SMTPServer
 }
 
 func NewEmailService(cfg SmtpConfig) *EmailService {
 	mailSrv := &EmailService{}
 	mailSrv.Cfg = cfg
 
-	client := mail.NewSMTPClient()
+	server := mail.NewSMTPClient()
 
 	// SMTP Client
-	client.Host = cfg.Host
-	client.Port = cfg.Port
-	client.Username = cfg.User
-	client.Password = cfg.Pwd
-	client.Encryption = mail.EncryptionSTARTTLS
-	client.ConnectTimeout = 10 * time.Second
-	client.SendTimeout = 10 * time.Second
-
-	// Connect to client
-	smtpClient, err := client.Connect()
+	server.Host = cfg.Host
+	server.Port = cfg.Port
+	server.Username = cfg.User
+	server.Password = cfg.Pwd
+	server.Encryption = mail.EncryptionSTARTTLS
+	server.ConnectTimeout = 10 * time.Second
+	server.SendTimeout = 10 * time.Second
+	mailSrv.SMTPServer = server
+	// try to connect server
+	client, err := mailSrv.GetSMTPClient()
 	if err != nil {
-		fmt.Printf("client.Connect error %s\n", err.Error())
+		log.Errorf("mailSrv.GetSMTPClient error : %s", err.Error())
 		return nil
 	}
+	client.Close()
 
-	mailSrv.Client = smtpClient
+	log.Info("init smtp server success")
+
 	return mailSrv
 }
 
+func (s *EmailService) GetSMTPClient() (*mail.SMTPClient, error) {
+	smtpClient, err := s.SMTPServer.Connect()
+	if err != nil {
+		log.Errorf("smtp client.Connect error : %s", err.Error())
+		return nil, err
+	}
+
+	return smtpClient, nil
+}
+
 func (s *EmailService) SendEmail(htmlBody string) error {
+	client, err := s.GetSMTPClient()
+	if err != nil {
+		log.Errorf("s.GetSMTPClient error : %s", err.Error())
+		return nil
+	}
+	defer client.Close()
+
 	// Create the email message
 	email := mail.NewMSG()
 
@@ -83,12 +104,13 @@ func (s *EmailService) SendEmail(htmlBody string) error {
 	}
 
 	// Pass the client to the email message to send it
-	return email.Send(s.Client)
+	return email.Send(client)
 }
 
 func (s *EmailService) SendWithHtml(tplPath string) error {
 	emailHtml, err := os.ReadFile(tplPath)
 	if err != nil {
+
 		fmt.Println("os.ReadFile error :" + err.Error())
 		return err
 	}
@@ -119,13 +141,14 @@ func (s *EmailService) SendWithHtmlTpl(processName, command string) error {
 	var body bytes.Buffer
 	err := s.Cfg.Tpl.Execute(&body, proErr)
 	if err != nil {
-		fmt.Println("Tpl.Execute,err", err)
+		log.Errorf("smtp Tpl.Execute error : %s\n", err.Error())
+		// fmt.Println("Tpl.Execute,err", err)
 		return err
 	}
 
 	err = s.SendEmail(body.String())
 	if err != nil {
-		fmt.Printf("SendEmail Error: %s\n", err.Error())
+		log.Errorf("smtp SendEmail error : %s", err.Error())
 		return err
 	}
 
