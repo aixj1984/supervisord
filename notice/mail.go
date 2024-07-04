@@ -29,7 +29,7 @@ type SmtpConfig struct {
 	User      string             // 发送邮件用户账号
 	Pwd       string             // 授权密码
 	Tpl       *template.Template // 发送消息模板
-	ToUser    string             // 邮件接收方
+	ToUser    []string           // 邮件接收方
 	ServerURL string             // 外部访问的URL
 }
 
@@ -88,7 +88,7 @@ func (s *EmailService) SendEmail(htmlBody string) error {
 	email := mail.NewMSG()
 
 	email.SetFrom(fmt.Sprintf("From Supervisord <%s>", s.Cfg.User)).
-		AddTo(s.Cfg.ToUser).
+		AddTo(s.Cfg.ToUser...).
 		SetSubject("Supervisord Exception Notice")
 
 	// Get from each mail

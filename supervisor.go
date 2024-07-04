@@ -508,7 +508,6 @@ func (s *Supervisor) createMailServer(cfg *config.Entry) {
 	port := cfg.GetInt("port", 587)
 	user := cfg.GetString("user", "")
 	password := cfg.GetString("password", "")
-	tpl_path := cfg.GetString("tpl_path", "./webgui/alarm.html")
 	to := cfg.GetString("to", "")
 
 	if len(to) == 0 {
@@ -516,7 +515,7 @@ func (s *Supervisor) createMailServer(cfg *config.Entry) {
 		return
 	}
 
-	tplData, err := ReadStaticFile(tpl_path)
+	tplData, err := ReadStaticFile("webgui/alarm.html")
 	if err != nil {
 		log.Errorf("read tpl file error : %s", err.Error())
 		return
@@ -527,13 +526,21 @@ func (s *Supervisor) createMailServer(cfg *config.Entry) {
 		log.Fatal("Error parsing template: ", err)
 	}
 
+	// 按逗号分割字符串
+	tos := strings.Split(to, ",")
+
+	// 去掉每个块的前后空格
+	for i, part := range tos {
+		tos[i] = strings.TrimSpace(part)
+	}
+
 	smtpCfg := notice.SmtpConfig{
 		Host:   host,
 		Port:   port,
 		User:   user,
 		Pwd:    password,
 		Tpl:    tmpl,
-		ToUser: to,
+		ToUser: tos,
 	}
 	// get server url for html link
 	if entry, ok := s.config.GetSupervisorctl(); ok {
