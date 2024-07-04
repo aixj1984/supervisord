@@ -117,7 +117,6 @@ func (c *Config) createEntry(name string, configDir string) *Entry {
 	return entry
 }
 
-//
 // Load the configuration and return loaded programs
 func (c *Config) Load() ([]string, error) {
 	myini := ini.NewIni()
@@ -250,6 +249,12 @@ func (c *Config) GetEntries(filterFunc func(entry *Entry) bool) []*Entry {
 		}
 	}
 	return result
+}
+
+// GetSMTP returns "smtp" configuration section
+func (c *Config) GetSMTP() (*Entry, bool) {
+	entry, ok := c.entries["smtp"]
+	return entry, ok
 }
 
 // GetGroups returns configuration entries of all program groups
@@ -405,7 +410,8 @@ func parseEnvFiles(s string) *map[string]string {
 }
 
 // GetEnv returns slice of strings with keys separated from values by single "=". An environment string example:
-//  environment = A="env 1",B="this is a test"
+//
+//	environment = A="env 1",B="this is a test"
 func (c *Entry) GetEnv(key string) []string {
 	value, ok := c.keyValues[key]
 	result := make([]string, 0)
@@ -426,7 +432,9 @@ func (c *Entry) GetEnv(key string) []string {
 }
 
 // GetEnvFromFiles returns slice of strings with keys separated from values by single "=". An envFile example:
-//  envFiles = global.env,prod.env
+//
+//	envFiles = global.env,prod.env
+//
 // cat global.env
 // varA=valueA
 func (c *Entry) GetEnvFromFiles(key string) []string {
@@ -511,7 +519,6 @@ func (c *Entry) GetStringArray(key string, sep string) []string {
 //	logSize=1GB
 //	logSize=1KB
 //	logSize=1024
-//
 func (c *Entry) GetBytes(key string, defValue int) int {
 	v, ok := c.keyValues[key]
 

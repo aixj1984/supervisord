@@ -34,12 +34,11 @@ func ToSignal(signalName string) (os.Signal, error) {
 	}
 }
 
-//
 // Args:
-//    process - the process
-//    sig - the signal
-//    sigChildren - ignore in windows system
 //
+//	process - the process
+//	sig - the signal
+//	sigChildren - ignore in windows system
 func Kill(process *os.Process, sig os.Signal, sigChilren bool) error {
 	// Signal command can't kill children processes, call  taskkill command to kill them
 	cmd := exec.Command("taskkill", "/F", "/T", "/PID", fmt.Sprintf("%d", process.Pid))

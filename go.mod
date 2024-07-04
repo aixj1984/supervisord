@@ -22,11 +22,13 @@ require (
 	github.com/ochinchina/supervisord/xmlrpcclient v0.0.0-20220520055329-8fdf6b62a44f
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.9.0
+	github.com/xhit/go-simple-mail/v2 v2.16.0
 )
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/go-test/deep v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/go-envparse v0.1.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
@@ -38,6 +40,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rogpeppe/go-charset v0.0.0-20190617161244-0dc95cdf6f31 // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
+	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect

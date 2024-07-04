@@ -59,10 +59,10 @@ func ToSignal(signalName string) (os.Signal, error) {
 // Kill send signal to the process
 //
 // Args:
-//    process - the process which the signal should be sent to
-//    sig - the signal will be sent
-//    sigChildren - true if the signal needs to be sent to the children also
 //
+//	process - the process which the signal should be sent to
+//	sig - the signal will be sent
+//	sigChildren - true if the signal needs to be sent to the children also
 func Kill(process *os.Process, sig os.Signal, sigChildren bool) error {
 	localSig := sig.(syscall.Signal)
 	pid := process.Pid

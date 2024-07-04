@@ -15,6 +15,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ochinchina/supervisord/notice"
+
 	"github.com/ochinchina/filechangemonitor"
 	"github.com/ochinchina/supervisord/config"
 	"github.com/ochinchina/supervisord/events"
@@ -179,6 +181,9 @@ func (p *Process) Start(wait bool) {
 				log.WithFields(log.Fields{"program": p.GetName()}).Info("Stopped by user, don't start it again")
 				break
 			}
+			// add except message
+			notice.SendAlarm(p.config.GetProgramName(), p.config.GetString("command", ""))
+			// add end
 			if !p.isAutoRestart() {
 				log.WithFields(log.Fields{"program": p.GetName()}).Info("Don't start the stopped program because its autorestart flag is false")
 				break

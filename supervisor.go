@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -16,6 +17,8 @@ import (
 	"github.com/ochinchina/supervisord/signals"
 	"github.com/ochinchina/supervisord/types"
 	"github.com/ochinchina/supervisord/util"
+
+	"github.com/ochinchina/supervisord/notice"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -445,6 +448,11 @@ func (s *Supervisor) Reload(restart bool) (addedGroup []string, changedGroup []s
 
 	loadedPrograms, err := s.config.Load()
 
+	// check smtp
+	if smtpCfg, ok := s.config.GetSMTP(); ok {
+		s.createMailServer(smtpCfg)
+	}
+
 	if checkErr := s.checkRequiredResources(); checkErr != nil {
 		log.Error(checkErr)
 		os.Exit(1)
@@ -493,6 +501,46 @@ func (s *Supervisor) createPrograms(prevPrograms []string) {
 	for _, p := range removedPrograms {
 		s.procMgr.Remove(p)
 	}
+}
+
+func (s *Supervisor) createMailServer(cfg *config.Entry) {
+	host := cfg.GetString("host", "")
+	port := cfg.GetInt("port", 587)
+	user := cfg.GetString("user", "")
+	password := cfg.GetString("password", "")
+	tpl_path := cfg.GetString("tpl_path", "./webgui/alarm.html")
+	to := cfg.GetString("to", "")
+
+	if len(to) == 0 {
+		log.Warn("create mail server error , to is empty")
+		return
+	}
+
+	tplData, err := ReadStaticFile(tpl_path)
+	if err != nil {
+		log.Errorf("read tpl file error : %s", err.Error())
+		return
+	}
+
+	tmpl, err := template.New("email").Parse(string(tplData))
+	if err != nil {
+		log.Fatal("Error parsing template: ", err)
+	}
+
+	smtpCfg := notice.SmtpConfig{
+		Host:   host,
+		Port:   port,
+		User:   user,
+		Pwd:    password,
+		Tpl:    tmpl,
+		ToUser: to,
+	}
+	// get server url for html link
+	if entry, ok := s.config.GetSupervisorctl(); ok {
+		smtpCfg.ServerURL = entry.GetString("serverurl", "")
+	}
+
+	notice.EmailSrv = notice.NewEmailService(smtpCfg)
 }
 
 func (s *Supervisor) startAutoStartPrograms() {
